@@ -5,7 +5,7 @@ import time
 import pandas as pd
 from collections import defaultdict
 
-# -------- Simulação da Blockchain --------
+# Simulação da Blockchain
 class Block:
     def __init__(self, index, data, prev_hash):
         self.index = index
@@ -40,7 +40,7 @@ class Blockchain:
     def get_chain(self):
         return [vars(block) for block in self.chain]
 
-# -------- Dados Simulados (Backend) --------
+# Dados Simulados (Backend)
 if 'blockchain' not in st.session_state:
     st.session_state.blockchain = Blockchain()
 
@@ -50,7 +50,7 @@ if 'categories' not in st.session_state:
 if 'votes' not in st.session_state:
     st.session_state.votes = defaultdict(int)
 
-# -------- Streamlit UI --------
+# Streamlit UI
 st.title("Sistema de Votação Eletrônica com Blockchain")
 
 menu = st.sidebar.radio("Escolha uma ação:", [
@@ -61,7 +61,7 @@ menu = st.sidebar.radio("Escolha uma ação:", [
     "Ver blockchain"
 ])
 
-# -------- Frontend --------
+# Frontend
 if menu == "Adicionar categoria":
     cat = st.text_input("Nova categoria")
     if st.button("Adicionar"):
@@ -86,7 +86,7 @@ elif menu == "Ver resultados":
     if st.session_state.votes:
         sorted_votes = sorted(st.session_state.votes.items(), key=lambda x: x[1], reverse=True)
         for cat, count in sorted_votes:
-            st.write(f"🗳️ {cat}: {count} voto(s)")
+            st.write(f"{cat}: {count} voto(s)")
     else:
         st.info("Nenhum voto registrado ainda.")
 
@@ -98,6 +98,18 @@ elif menu == "Ver gráfico de votação":
         st.info("Nenhum voto registrado ainda.")
 
 elif menu == "Ver blockchain":
-    st.write("🔗 Histórico da blockchain:")
-    for block in st.session_state.blockchain.get_chain():
+    st.write("Histórico da blockchain:")
+    chain_data = st.session_state.blockchain.get_chain()
+    
+    for block in chain_data:
         st.json(block)
+    
+    blockchain_json = json.dumps(chain_data, indent=4)
+    
+    st.download_button(
+        label="Baixar Blockchain (.json)",
+        data=blockchain_json,
+        file_name="blockchain_data.json",
+        mime="application/json"
+    )
+        

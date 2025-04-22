@@ -1,5 +1,10 @@
+import os
+
 from block import Block
 from time import time
+import json
+
+FILENAME = "VotingSystemBlockchain/blockchain.json"
 
 
 def is_new_block_valid(block, previous_block):
@@ -14,10 +19,16 @@ class Blockchain:
     def __init__(self, difficulty):
         self.difficulty = difficulty
         self.chain = []
-        self.create_genesis_block()
+        self.start_blockchain()
 
     def get_latest_block(self):
         return self.chain[-1]
+
+    def start_blockchain(self):
+        try:
+            self.load_from_file()
+        except FileNotFoundError:
+            self.create_genesis_block()
 
     def create_genesis_block(self):
         genesis_block = Block(0, time(), "0", None)
@@ -39,5 +50,37 @@ class Blockchain:
 
         print("Bloco adicionado à blockchain.")
 
+        self.save_to_file()
+
     def get_chain(self):
         return [vars(block) for block in self.chain]
+
+    def save_to_file(self):
+        blockchain_json = json.dumps(self.get_chain(), indent=4)
+
+        with open(FILENAME, "w") as file:
+            file.write(blockchain_json)
+
+        print("Blockchain salva com sucesso.")
+
+    def load_from_file(self):
+        if not os.path.exists(FILENAME):
+            print("Arquivo não encontrado.")
+            raise FileNotFoundError
+
+        with open(FILENAME, "r") as file:
+            loaded_chain = json.load(file)
+
+        self.chain = []
+        for block_data in loaded_chain:
+            block = Block(
+                index=block_data['index'],
+                timestamp=block_data['timestamp'],
+                data=block_data['data'],
+                prev_hash=block_data['prev_hash']
+            )
+            block.nonce = block_data['nonce']
+            block.hash = block_data['hash']
+            self.chain.append(block)
+
+        print("Blockchain carregada com sucesso.")

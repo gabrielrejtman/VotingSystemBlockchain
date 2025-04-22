@@ -1,48 +1,15 @@
-import streamlit as st
-import hashlib
 import json
-import time
 import pandas as pd
 from collections import defaultdict
+import streamlit as st
 
-# Simulação da Blockchain
-class Block:
-    def __init__(self, index, data, prev_hash):
-        self.index = index
-        self.timestamp = time.time()
-        self.data = data
-        self.prev_hash = prev_hash
-        self.hash = self.compute_hash()
-    
-    def compute_hash(self):
-        block_string = json.dumps({
-            'index': self.index,
-            'timestamp': self.timestamp,
-            'data': self.data,
-            'prev_hash': self.prev_hash
-        }, sort_keys=True).encode()
-        return hashlib.sha256(block_string).hexdigest()
+from blockchain import Blockchain
 
-class Blockchain:
-    def __init__(self):
-        self.chain = []
-        self.create_genesis_block()
-    
-    def create_genesis_block(self):
-        genesis_block = Block(0, {"msg": "Bloco Gênesis"}, "0")
-        self.chain.append(genesis_block)
-
-    def add_block(self, data):
-        prev_block = self.chain[-1]
-        new_block = Block(len(self.chain), data, prev_block.hash)
-        self.chain.append(new_block)
-
-    def get_chain(self):
-        return [vars(block) for block in self.chain]
+DIFFICULTY = 3
 
 # Dados Simulados (Backend)
 if 'blockchain' not in st.session_state:
-    st.session_state.blockchain = Blockchain()
+    st.session_state.blockchain = Blockchain(DIFFICULTY)
 
 if 'categories' not in st.session_state:
     st.session_state.categories = []
@@ -67,6 +34,7 @@ if menu == "Adicionar categoria":
     if st.button("Adicionar"):
         if cat and cat not in st.session_state.categories:
             st.session_state.categories.append(cat)
+            st.session_state.categories.sort()
             st.success(f"Categoria '{cat}' adicionada.")
         else:
             st.warning("Categoria inválida ou já existente.")
@@ -112,4 +80,3 @@ elif menu == "Ver blockchain":
         file_name="blockchain_data.json",
         mime="application/json"
     )
-        

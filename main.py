@@ -1,6 +1,5 @@
 import json
 import pandas as pd
-from collections import defaultdict
 import streamlit as st
 
 from blockchain import Blockchain
@@ -12,10 +11,10 @@ if 'blockchain' not in st.session_state:
     st.session_state.blockchain = Blockchain(DIFFICULTY)
 
 if 'categories' not in st.session_state:
-    st.session_state.categories = []
+    st.session_state.categories = sorted(st.session_state.blockchain.get_categories())
 
 if 'votes' not in st.session_state:
-    st.session_state.votes = defaultdict(int)
+    st.session_state.votes = st.session_state.blockchain.get_votes()
 
 # Streamlit UI
 st.title("Sistema de Votação Eletrônica com Blockchain")

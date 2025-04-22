@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 
 from block import Block
 from time import time
@@ -54,6 +55,23 @@ class Blockchain:
 
     def get_chain(self):
         return [vars(block) for block in self.chain]
+
+    def get_categories(self):
+        categories = set()
+        for block in self.chain:
+            if isinstance(block.data, dict):
+                categories.add(block.data["voto"])
+
+        return categories
+
+    def get_votes(self):
+        votes = defaultdict(int)
+
+        for block in self.chain:
+            if isinstance(block.data, dict):
+                votes[block.data["voto"]] += 1
+
+        return votes
 
     def save_to_file(self):
         blockchain_json = json.dumps(self.get_chain(), indent=4)

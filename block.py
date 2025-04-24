@@ -3,13 +3,14 @@ import hashlib
 
 
 class Block:
-    def __init__(self, index, timestamp, data, prev_hash):
+    def __init__(self, index, timestamp, data, prev_hash, voter_hash):
         self.index = index
         self.timestamp = timestamp
         self.data = data
         self.prev_hash = prev_hash
         self.nonce = 0
         self.hash = self.compute_hash()
+        self.voter_hash = voter_hash
 
     def compute_hash(self):
         block_string = json.dumps({
@@ -30,3 +31,6 @@ class Block:
         while not self.hash.startswith(target):
             self.nonce += 1
             self.hash = self.compute_hash()
+
+    def get_voter_hash(self):
+        return self.voter_hash

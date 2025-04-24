@@ -5,7 +5,7 @@ from block import Block
 from time import time
 import json
 
-FILENAME = "VotingSystemBlockchain/blockchain.json"
+FILENAME = "blockchain.json"
 
 
 def is_new_block_valid(block, previous_block):
@@ -32,18 +32,18 @@ class Blockchain:
             self.create_genesis_block()
 
     def create_genesis_block(self):
-        genesis_block = Block(0, time(), "0", None)
+        genesis_block = Block(0, time(), "0", None, None)
         genesis_block.proof_of_work(self.difficulty)
         self.chain.append(genesis_block)
 
         print("Bloco gênesis criado.")
 
-    def new_block(self, data):
+    def new_block(self, data, voter_hash):
         latest_block = self.get_latest_block()
-        return Block(latest_block.index + 1, time(), data, latest_block.hash)
+        return Block(latest_block.index + 1, time(), data, latest_block.hash, voter_hash)
 
-    def add_block(self, data):
-        new_block = self.new_block(data)
+    def add_block(self, data, voter_hash):
+        new_block = self.new_block(data, voter_hash)
 
         if new_block and is_new_block_valid(new_block, self.get_latest_block()):
             new_block.proof_of_work(self.difficulty)
@@ -73,12 +73,22 @@ class Blockchain:
 
         return votes
 
+    def has_user_voted(self, voter_hash):
+        for block in self.chain:
+            if block.get_voter_hash() == voter_hash:
+                return True
+        
+        return False
+
     def save_to_file(self):
         blockchain_json = json.dumps(self.get_chain(), indent=4)
 
-        with open(FILENAME, "w") as file:
-            file.write(blockchain_json)
-
+        try:
+            with open(FILENAME, "w") as file:
+                file.write(blockchain_json)
+        except (FileNotFoundError, ValueError):
+            with open(FILENAME, "w") as file:
+                file.write(blockchain_json)
         print("Blockchain salva com sucesso.")
 
     def load_from_file(self):
@@ -95,7 +105,8 @@ class Blockchain:
                 index=block_data['index'],
                 timestamp=block_data['timestamp'],
                 data=block_data['data'],
-                prev_hash=block_data['prev_hash']
+                prev_hash=block_data['prev_hash'],
+                voter_hash=block_data['voter_hash']
             )
             block.nonce = block_data['nonce']
             block.hash = block_data['hash']

@@ -1,10 +1,13 @@
 import json
 import pandas as pd
 import streamlit as st
+import hashlib
+from validate_docbr import CPF
 
 from blockchain import Blockchain
 
 DIFFICULTY = 3
+cpf = CPF()
 
 # Dados Simulados (Backend)
 if 'blockchain' not in st.session_state:
@@ -43,11 +46,19 @@ elif menu == "Votar":
         st.warning("Adicione categorias antes de votar.")
     else:
         choice = st.selectbox("Escolha uma categoria para votar:", st.session_state.categories)
+        voter_id = st.text_input("Insira seu CPF")
         if st.button("Votar"):
-            st.session_state.votes[choice] += 1
-            # Simula gravação no blockchain
-            st.session_state.blockchain.add_block({"voto": choice})
-            st.success(f"Voto para '{choice}' registrado.")
+            if cpf.validate(voter_id):
+                voter_id = hashlib.sha256(str(voter_id).encode()).hexdigest()
+                if not st.session_state.blockchain.has_user_voted(voter_id):
+                    st.session_state.votes[choice] += 1
+                    # Simula gravação no blockchain
+                    st.session_state.blockchain.add_block({"voto": choice}, voter_id)
+                    st.success(f"Voto para '{choice}' registrado.")
+                else:
+                    st.warning("Você já votou! (' - ';)")
+            else:
+                st.warning("CPF inválido! (^._.^)/")
 
 elif menu == "Ver resultados":
     if st.session_state.votes:

@@ -23,7 +23,7 @@ garantindo segurança e transparência por meio da tecnologia de <i>blockchain</
 
 ## Funcionalidades
 - Adicionar novos candidatos à votação
-- Votar utilizando o CPF (com proteção de identidade)
+- Votar utilizando o CPF (com proteção de identidade por <i>hash</i>)
 - <i>Blockchain</i> para registrar cada voto de forma segura e imutável
 - Visualizar resultados e gráficos em tempo real
 - Exportar a blockchain completa em formato .json

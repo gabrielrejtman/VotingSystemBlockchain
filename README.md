@@ -23,7 +23,7 @@ ensuring security and transparency through blockchain technology
 
 ## Features
 - Add new candidates to the voting system
-- Vote using CPF (with identity protection)
+- Vote using CPF (with identity protection through hashing)
 - Blockchain to securely and immutably record each vote
 - View results and chars in real-time
 - Export the complete blockchain in .json format

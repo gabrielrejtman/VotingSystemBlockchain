@@ -11,9 +11,9 @@ FILENAME = "blockchain.json"
 def is_new_block_valid(block, previous_block):
     return (block
             and previous_block
-            and previous_block.__index + 1 == block.__index
-            and block.__prev_hash == previous_block.__hash
-            and block.__hash == block.compute_hash())
+            and previous_block.get_index() + 1 == block.get_index()
+            and block.get_prev_hash() == previous_block.get_hash()
+            and block.get_hash == block.compute_hash())
 
 
 class Blockchain:
@@ -36,9 +36,9 @@ class Blockchain:
         def is_genesis_block_valid():
             genesis_block = self.__chain[0]
             return (genesis_block
-                    and genesis_block.__index == 0
-                    and genesis_block.__prev_hash is None
-                    and genesis_block.__hash == genesis_block.compute_hash())
+                    and genesis_block.get_index() == 0
+                    and genesis_block.get_prev_hash() is None
+                    and genesis_block.get_hash() == genesis_block.compute_hash())
         if not is_genesis_block_valid():
             return False
 
@@ -76,8 +76,7 @@ class Blockchain:
                 prev_hash=block_data['prev_hash'],
                 voter_hash=block_data['voter_hash']
             )
-            block.__nonce = block_data['nonce']
-            block.__hash = block_data['hash']
+            block.set_nonce_and_hash(block_data['nonce'], block_data['hash'])
             self.__chain.append(block)
 
         print("Blockchain carregada com sucesso.")
@@ -111,8 +110,8 @@ class Blockchain:
     def get_categories(self):
         categories = set()
         for block in self.__chain:
-            if isinstance(block.__data, dict):
-                categories.add(block.__data["voto"])
+            if isinstance(block.get_data(), dict):
+                categories.add(block.get_data()["voto"])
 
         return categories
 
@@ -120,8 +119,8 @@ class Blockchain:
         votes = defaultdict(int)
 
         for block in self.__chain:
-            if isinstance(block.__data, dict):
-                votes[block.__data["voto"]] += 1
+            if isinstance(block.get_data(), dict):
+                votes[block.get_data()["voto"]] += 1
 
         return votes
 

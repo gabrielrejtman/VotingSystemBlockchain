@@ -3,20 +3,20 @@ import hashlib
 
 
 class Block:
-    def __init__(self, index, timestamp, data, prev_hash, voter_hash):
+    def __init__(self, index, timestamp, candidate, prev_hash, voter_hash):
         self.__index = index
         self.__timestamp = timestamp
-        self.__data = data
+        self.__candidate = candidate
         self.__prev_hash = prev_hash
         self.__nonce = 0
-        self.__hash = self.compute_hash()
         self.__voter_hash = voter_hash
+        self.__hash = self.compute_hash()
 
     def compute_hash(self):
         block_string = json.dumps({
             'index': self.__index,
             'timestamp': self.__timestamp,
-            'data': self.__data,
+            'data': self.__candidate,
             'prev_hash': self.__prev_hash,
             'nonce': self.__nonce
         }, sort_keys=True).encode()
@@ -39,7 +39,7 @@ class Block:
         self.__timestamp = timestamp
 
     def __set_data(self, data):
-        self.__data = data
+        self.__candidate = data
 
     def __set_prev_hash(self, prev_hash):
         self.__prev_hash = prev_hash
@@ -60,7 +60,7 @@ class Block:
         return self.__timestamp
 
     def get_data(self):
-        return self.__data
+        return self.__candidate
 
     def get_prev_hash(self):
         return self.__prev_hash

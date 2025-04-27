@@ -72,7 +72,7 @@ class Blockchain:
             block = Block(
                 index=block_data['index'],
                 timestamp=block_data['timestamp'],
-                data=block_data['data'],
+                candidate=block_data['candidate'],
                 prev_hash=block_data['prev_hash'],
                 voter_hash=block_data['voter_hash']
             )

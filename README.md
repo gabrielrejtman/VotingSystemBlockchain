@@ -2,6 +2,9 @@
 
 This project is an Electronic Voting System built in Python, 
 using blockchain to securely record votes and Streamlit for the web interface.
+This system was developed to simplify the electronic voting process,
+ensuring security and transparency through blockchain technology
+
 > 🇧🇷 [Versão em Português](./README-pt.md)
 
 ## Table of contents

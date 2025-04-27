@@ -35,5 +35,7 @@ using blockchain to securely record votes and Streamlit for the web interface.
 
 ## How to run
 ```bash
+git clone https://github.com/gabrielrejtman/VotingSystemBlockchain.git
+cd VotingSystemBlockchain
 pip install -r requirements.txt
 streamlit run main.py

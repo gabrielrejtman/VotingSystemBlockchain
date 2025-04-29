@@ -1,6 +1,4 @@
 import streamlit as st
-import httpx
-import urllib
 import requests
 import pandas as pd
 
@@ -10,10 +8,12 @@ API_URL = "http://127.0.0.1:8000"
 
 def frontend():
     def categories():
-        return backend.get_categories()
+        response = requests.get(f"{API_URL}/categories")
+        return response.json()
     
     def votes():
-        return backend.get_sorted_votes()
+        response = requests.get(f"{API_URL}/result")
+        return response.json()
     
     st.title("Sistema de Votação Eletrônica com Blockchain")
 

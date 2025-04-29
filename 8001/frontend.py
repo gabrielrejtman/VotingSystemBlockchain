@@ -1,6 +1,4 @@
 import streamlit as st
-import httpx
-import urllib
 import requests
 import pandas as pd
 

@@ -156,6 +156,8 @@ def sync_with_peers():
 
         blockchain.set_chain(new_chain)  # forçar substituição da cadeia
         blockchain.save_to_file()
+        global categories
+        categories = list(blockchain.get_categories())
         return {"message": "Blockchain sincronizada com sucesso!"}
 
     return {"message": "Nenhuma cadeia mais longa encontrada."}

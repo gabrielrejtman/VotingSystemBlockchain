@@ -1,3 +1,8 @@
 streamlit
 pandas
 validate-docbr
+fastapi
+pydantic
+ecdsa
+uvicorn
+httpx

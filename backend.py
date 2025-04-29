@@ -1,52 +1,14 @@
 import hashlib
-import json
-import pandas as pd
 from validate_docbr import CPF
-
-cpf = CPF()
-
-# def add_candidate(categories, new_category):
-#     if new_category and new_category not in categories:
-#         categories.append(new_category)
-#         categories.sort()
-
-#         return True, f"Categoria {new_category} adicionada."
-#     else:
-#         return False, "Categoria inválida ou já existente"
-
-# def validate_and_vote(blockchain, votes, categories, choice, voter_cpf):
-#     if not categories:
-#         return False, "Nenhuma categoria cadastrada."
-
-#     if not cpf.validate(voter_cpf):
-#         return False, "CPF inválido!"
-
-#     voter_id_hash = hashlib.sha256(str(voter_cpf).encode()).hexdigest()
-
-#     if blockchain.has_user_voted(voter_id_hash):
-#         return False, "Você já votou! (' - ';)"
-
-#     votes[choice] += 1
-
-#     blockchain.add_block({"voto": choice}, voter_id_hash)
-#     return True, "Voto registrado com sucesso!"
-
-# def get_sorted_votes(votes):
-#     return sorted(votes.items(), key=lambda x: x[1], reverse=True)
-
-# def export_blockchain(blockchain):
-#     return json.dumps(blockchain, indent=4)
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 import json
-import time
-from ecdsa import SigningKey, VerifyingKey, NIST384p, BadSignatureError
 import requests
 
 from block import Block
 from blockchain import Blockchain
 
+cpf = CPF()
 
 class VoteRequest(BaseModel):
     choice: str
@@ -90,38 +52,28 @@ def add_candidate(new_category):
         categories.append(new_category)
         categories.sort()
 
-        return True, f"Categoria {new_category} adicionada."
+        return True, f"The category {new_category} has been created."
     else:
-        return False, "Categoria inválida ou já existente"
+        return False, "Invalid or already existent category"
 
 @app.post("/vote")
 def validate_and_vote(vote: VoteRequest):
-
-    print("CHEGOU")
     choice = vote.choice
     voter_cpf = vote.voter_cpf
 
-    print("VARIAVEIS")
-
     if not categories:
-        return {"success": False, "message": "Nenhuma categoria cadastrada."}
-    print("SIM CATEGORIAS")
+        return {"success": False, "message": "There are no registered categories"}
 
     if not cpf.validate(voter_cpf):
-        return {"success": False, "message": "CPF inválido!"}
-    print("SIM CPF")
+        return {"success": False, "message": "Invalid CPF"}
 
     voter_id_hash = hashlib.sha256(str(voter_cpf).encode()).hexdigest()
 
     if blockchain.has_user_voted(voter_id_hash):
-        return {"success": False, "message": "Você já votou! (' - ';)"}
-    
-    print("SIM NAO VOTOU")
+        return {"success": False, "message": "You have already voted! (' - ';)"}
 
     blockchain.add_block({"voto": choice}, voter_id_hash)
-
-    print("SIM BLOCKCHAIN")
-    return {"success": True, "message": "Voto registrado com sucesso!"}
+    return {"success": True, "message": "Vote successfully registered"}
 
 @app.get("/peers")
 def list_peers():
@@ -138,7 +90,7 @@ def sync_with_peers():
             if len(peer_chain) > len(longest_chain):
                 longest_chain = peer_chain
         except Exception as e:
-            print(f"Erro ao sincronizar com {peer}: {e}")
+            print(f"Error synchronizing to {peer}: {e}")
             continue
 
     if len(longest_chain) > len(blockchain.get_chain()):
@@ -154,13 +106,13 @@ def sync_with_peers():
             new_block.set_nonce_and_hash(block_data['_Block__nonce'], block_data['_Block__hash'])
             new_chain.append(new_block)
 
-        blockchain.set_chain(new_chain)  # forçar substituição da cadeia
+        blockchain.set_chain(new_chain)
         blockchain.save_to_file()
         global categories
         categories = list(blockchain.get_categories())
-        return {"message": "Blockchain sincronizada com sucesso!"}
+        return {"message": "The blockchain has been synchronized"}
 
-    return {"message": "Nenhuma cadeia mais longa encontrada."}
+    return {"message": "A longer chain has not been found."}
 
 @app.post("/peers/register")
 def register_peer(peer_url: str):

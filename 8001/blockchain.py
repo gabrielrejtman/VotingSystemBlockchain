@@ -30,7 +30,7 @@ class Blockchain:
         genesis_block.proof_of_work(self.__difficulty)
         self.__chain.append(genesis_block)
 
-        print("Bloco gênesis criado.")
+        print("Genesis block created.")
 
     def __is_blockchain_valid(self):
         def is_genesis_block_valid():
@@ -39,6 +39,7 @@ class Blockchain:
                     and genesis_block.get_index() == 0
                     and genesis_block.get_prev_hash() is None
                     and genesis_block.get_hash() == genesis_block.compute_hash())
+
         if not is_genesis_block_valid():
             return False
 
@@ -57,11 +58,11 @@ class Blockchain:
         except (FileNotFoundError, ValueError):
             with open(FILENAME, "w") as file:
                 file.write(blockchain_json)
-        print("Blockchain salva com sucesso.")
+        print("Blockchain has been saved.")
 
     def load_from_file(self):
         if not os.path.exists(FILENAME):
-            print("Arquivo não encontrado.")
+            print("File not found.")
             raise FileNotFoundError
 
         with open(FILENAME, "r") as file:
@@ -79,8 +80,7 @@ class Blockchain:
             block.set_nonce_and_hash(block_data['_Block__nonce'], block_data['_Block__hash'])
             self.__chain.append(block)
 
-        print("Blockchain carregada com sucesso.")
-
+        print("Blockchain successfully loaded")
 
     def __start_blockchain(self):
         try:
@@ -102,17 +102,16 @@ class Blockchain:
         print("New block:", new_block)
 
         if new_block and is_new_block_valid(new_block, self.__get_latest_block()):
-            print("Entrou em new_block")
             new_block.proof_of_work(self.__difficulty)
             self.__chain.append(new_block)
 
-        print("Bloco adicionado à blockchain.")
+        print("The block has been added to the blockchain.")
 
         self.save_to_file()
 
     def get_chain(self):
         return [vars(block) for block in self.__chain]
-    
+
     def set_chain(self, chain):
         self.__chain = chain
 
@@ -137,5 +136,5 @@ class Blockchain:
         for block in self.__chain:
             if block.get_voter_hash() == voter_hash:
                 return True
-        
+
         return False

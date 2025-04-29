@@ -5,7 +5,6 @@ from frontend import frontend
 
 DIFFICULTY = 3
 
-# Dados Simulados (Backend)
 if 'blockchain' not in st.session_state:
     st.session_state.blockchain = Blockchain(DIFFICULTY)
 

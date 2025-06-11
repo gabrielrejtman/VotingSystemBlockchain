@@ -1,8 +1,4 @@
 streamlit
-pandas
 validate-docbr
-fastapi
-pydantic
-ecdsa
-uvicorn
-httpx
+web3
+python-dotenv

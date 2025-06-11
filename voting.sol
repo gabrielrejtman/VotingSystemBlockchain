@@ -1,51 +1,53 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.0;
 
 contract Voting {
     struct Candidate {
+        uint256 id;
         string name;
-        uint votes;
+        uint256 voteCount;
     }
 
-    mapping(uint => Candidate) public Candidates;
-    uint public totalCandidates;
+    mapping(uint256 => Candidate) public candidates;
+    uint256 public candidatesCount;
 
-    mapping(string => bool) public cpfAlreadyVoted;
+    mapping(bytes32 => bool) public hasVoted;
 
     address public owner;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner has permission");
+        _;
+    }
 
     constructor() {
         owner = msg.sender;
     }
 
-    modifier ownerOnly() {
-        require(msg.sender == owner, "Only the owner can do this.");
-        _;
+    function addCandidate(string memory _name) public onlyOwner {
+        candidatesCount++;
+        candidates[candidatesCount] = Candidate(candidatesCount, _name, 0);
     }
 
-    function addCandidate(string memory _name) public ownerOnly {
-        Candidates[totalCandidates] = Candidate(_name, 0);
-        totalCandidates++;
+    function vote(bytes32 voterHash, uint256 candidateId) public {
+        require(!hasVoted[voterHash], "Already voted");
+        require(candidateId > 0 && candidateId <= candidatesCount, "Invalid candidate");
+
+        hasVoted[voterHash] = true;
+        candidates[candidateId].voteCount++;
     }
 
-    function vote(uint _idCandidate, string memory _cpf) public {
-        require(_idCandidate < totalCandidates, "Invalid candidate.");
-        require(!cpfAlreadyVoted[_cpf], "CPF already voted.");
-
-        Candidates[_idCandidate].votes++;
-        cpfAlreadyVoted[_cpf] = true;
+    function getCandidate(uint256 candidateId) public view returns (string memory, uint256) {
+        require(candidateId > 0 && candidateId <= candidatesCount, "Invalid candidate");
+        Candidate memory c = candidates[candidateId];
+        return (c.name, c.voteCount);
     }
 
-    function get_votes(uint _idCandidate) public view returns (uint) {
-        require(_idCandidate < totalCandidates, "Invalid candidate.");
-        return Candidates[_idCandidate].votes;
-    }
-
-    function list_candidates() public view returns (Candidate[] memory) {
-        Candidate[] memory candidate_list = new Candidate[](totalCandidates);
-        for (uint i = 0; i < totalCandidates; i++) {
-            candidate_list[i] = Candidates[i];
+    function getCandidateNames() public view returns (string[] memory) {
+        string[] memory names = new string[](candidatesCount);
+        for (uint256 i = 0; i < candidatesCount; i++) {
+            names[i] = candidates[i + 1].name; // IDs começam em 1
         }
-        return candidate_list;
+        return names;
     }
 }

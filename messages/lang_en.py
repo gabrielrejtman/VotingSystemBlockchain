@@ -24,7 +24,8 @@ WARNINGS = SimpleNamespace(
     EMPTY_CANDIDATE_FIELD="Candidate name cannot be empty!",
     INVALID_CPF="Invalid CPF!",
     EMPTY_CPF_FIELD="Please, enter your CPF.",
-    CPF_ALREADY_VOTED="This CPF has already been used to vote!"
+    CPF_ALREADY_VOTED="This CPF has already been used to vote!",
+    NOT_OWNER="The current user is not the contract's owner"
 )
 
 RESULTS = SimpleNamespace(

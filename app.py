@@ -14,7 +14,7 @@ from validate_docbr import CPF
 from messages import get_languages
 from messages import Messages
 
-load_dotenv()
+load_dotenv(override=True)
 
 # Initial setup
 infura_url = os.getenv("INFURA_URL")
@@ -29,59 +29,76 @@ contract = web3.eth.contract(address=contract_address, abi=contract_abi)
 private_key = os.getenv("PRIVATE_KEY")
 account_address = web3.eth.account.from_key(private_key).address
 
-# Settings Streamlit UI
+# Verificar se o usuário é o owner
+owner_address = contract.functions.owner().call()
+is_owner = (account_address.lower() == owner_address.lower())
 
+# Settings Streamlit UI
 st.set_page_config(
     page_title="DApp Voting System",
     page_icon="🗳️",
-    layout="centered",  # ou "wide"
+    layout="centered",
     initial_sidebar_state="expanded"
 )
 
 available_languages = get_languages()
-language = st.sidebar.selectbox("🌐", available_languages)
+language = st.sidebar.radio("Language", available_languages)
 msg = Messages(language)
 
 st.title(msg.TITLES.MAIN)
 
-menu_options = [
-    msg.MENU_OPTIONS.ADD_CANDIDATE,
+# Montar menu com base em quem é o owner
+menu_options = []
+
+if is_owner:
+    menu_options.append(msg.MENU_OPTIONS.ADD_CANDIDATE)
+
+menu_options.extend([
     msg.MENU_OPTIONS.VOTE,
     msg.MENU_OPTIONS.VIEW_RESULTS,
     msg.MENU_OPTIONS.VIEW_CHART
-]
-option = st.sidebar.selectbox(msg.MENU_OPTIONS.MENU_NAVIGATION, menu_options)
+])
+
+option = st.sidebar.radio(msg.MENU_OPTIONS.MENU_NAVIGATION, menu_options)
 
 msg.set_language(language)
 
+contract_owner = contract.functions.owner().call()
+is_owner = (account_address.lower() == contract_owner.lower())
+
 if option == msg.MENU_OPTIONS.ADD_CANDIDATE:
-    name = st.text_input(msg.LABELS.CANDIDATE_NAME)
-    if st.button(msg.BUTTONS.ADD):
-        if not name.strip():
-            st.warning(msg.WARNINGS.EMPTY_CANDIDATE_FIELD)
-        else:
-            # Obtém todos os nomes de candidatos do contrato
-            existing_names = contract.functions.getCandidateNames().call()
-
-            # Verifica se o nome (ignorando maiúsculas/minúsculas e espaços) já está cadastrado
-            normalized_input = name.strip().lower()
-            name_exists = any(n.strip().lower() == normalized_input for n in existing_names)
-
-            if name_exists:
-                st.warning(msg.WARNINGS.CANDIDATE_ALREADY_EXISTS.format(name))
+    if is_owner:
+        name = st.text_input(msg.LABELS.CANDIDATE_NAME)
+        if st.button(msg.BUTTONS.ADD):
+            if not name.strip():
+                st.warning(msg.WARNINGS.EMPTY_CANDIDATE_FIELD)
             else:
-                nonce = web3.eth.get_transaction_count(account_address)
-                base_gas_price = web3.eth.gas_price + web3.to_wei('5', "gwei")
-                tx = contract.functions.addCandidate(name).build_transaction({
-                    'from': account_address,
-                    'nonce': nonce,
-                    'gas': 300000,
-                    'gasPrice': base_gas_price + web3.to_wei('1', 'gwei')
-                })
-                signed_tx = web3.eth.account.sign_transaction(tx, private_key)
-                tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-                tx_hash_hex = web3.to_hex(tx_hash)
-                st.success(msg.SUCCESS.CANDIDATE_ADDED.format(name, tx_hash_hex))
+                existing_names = contract.functions.getCandidateNames().call()
+                normalized_input = name.strip().lower()
+                name_exists = any(n.strip().lower() == normalized_input for n in existing_names)
+
+                if name_exists:
+                    st.warning(msg.WARNINGS.CANDIDATE_ALREADY_EXISTS.format(name))
+                else:
+                    nonce = web3.eth.get_transaction_count(account_address)
+                    base_gas_price = web3.eth.gas_price + web3.to_wei('5', "gwei")
+                    tx = contract.functions.addCandidate(name).build_transaction({
+                        'from': account_address,
+                        'nonce': nonce,
+                        'gas': 300000,
+                        'gasPrice': base_gas_price + web3.to_wei('1', 'gwei')
+                    })
+                    signed_tx = web3.eth.account.sign_transaction(tx, private_key)
+                    tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+                    receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+                    tx_hash_hex = web3.to_hex(tx_hash)
+                    if receipt.status == 1:
+                        st.success(msg.SUCCESS.CANDIDATE_ADDED.format(name, tx_hash_hex))
+                    else:
+                        st.error(msg.WARNINGS.NOT_OWNER + f"TX: {tx_hash_hex}")
+    else:
+        st.error(msg.WARNINGS.NOT_OWNER)
 
 elif option == msg.MENU_OPTIONS.VOTE:
     names = contract.functions.getCandidateNames().call()
@@ -122,7 +139,6 @@ elif option == msg.MENU_OPTIONS.VOTE:
                             signed_tx = web3.eth.account.sign_transaction(tx, private_key)
                             tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
-                            # Espera confirmação
                             receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
                             tx_hash_hex = web3.to_hex(tx_hash)
 
@@ -164,10 +180,7 @@ elif option == msg.MENU_OPTIONS.VIEW_CHART:
     ax.set_ylabel(msg.CHART_LABELS.VOTE_COUNT)
     ax.set_title(msg.CHART_LABELS.CHART_TITLE)
 
-    # Remover decimais dos valores do eixo Y
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    # Restante do código
     ax.set_xticklabels(all_candidates, rotation=45, ha='right')
     ax.grid(axis='y', linestyle='--', alpha=0.7)
     fig.tight_layout()
